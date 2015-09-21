@@ -1,1 +1,27 @@
-first text
+<?php
+
+$first_name = "Brandiit";
+$last_name = "Marauder";
+
+echo $first_name." ".$last_name;
+
+?>
+
+<?php
+
+$age = 5
+>
+<
+>=
+<=
+==
+!=
+
+if( loogikatehe ){ tõene } else { väär }
+if ($age < 18) {
+echo "alaealine";
+} else {
+echo "täisealine";
+}
+
+?>
