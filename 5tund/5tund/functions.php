@@ -21,7 +21,10 @@
                     
                     // Kasutaja email ja parool õiged
                     echo "Kasutaja logis sisse id=".$id_from_db;
-                    
+					
+					$_SESSION['logged_in_user_id'] = $id_from_db;
+                    $_SESSION['logged_in_user_email'] = $email_from_db;
+					header("Location: data.php");
                 }else{
                     echo "Wrong credentials!";
                 }
