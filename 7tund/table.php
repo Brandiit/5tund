@@ -1,15 +1,32 @@
-
 <?php  
     require_once("functions.php");
     
-    $car_array = getAllData();
+    
 	if(isset($_GET["delete"])){
 		deleteCarData($_GET["delete"]);
 	}
-
+	if(isset($_GET["update"])){
+        updateCarData($_GET["car_id"], $_GET["number_plate"], $_GET["color"]);
+		
+		$keyword = "";
+    if(isset($_GET["keyword"])){
+        $keyword = $_GET["keyword"];
+        
+        // otsime 
+        $car_array = getAllData($keyword);
+    
+	}else{
+	$car_array = getAllData();
+	}
 ?>
 
 <h1>Tabel</h1>
+
+<form action="table.php" method="get">
+    <input name="keyword" type="search" value="<?=$keyword?>" >
+    <input type="submit" value="otsi">
+<form>
+
 <table border=1>
 <tr>
 	<th>id</th>
@@ -20,7 +37,6 @@
 <?php    
     // autod ükshaaval läbi käia
     for($i = 0; $i < count($car_array); $i++){
-        
         // kasutaja tahab rida muuta
         if(isset($_GET["edit"]) && $_GET["edit"] == $car_array[$i]->id){
             echo "<tr>";
@@ -44,6 +60,7 @@
             echo "<td>".$car_array[$i]->color."</td>";
             echo "<td><a href='?delete=".$car_array[$i]->id."'>X</a></td>";
             echo "<td><a href='?edit=".$car_array[$i]->id."'>edit</a></td>";
+			echo "<td><a href='edit.php?edit_id=".$car_array[$i]->id."'>edit.php</a></td>";
             echo "</tr>";
             
         }
