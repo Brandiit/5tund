@@ -1,83 +1,139 @@
 <?php
-    // kõik mis seotud andmetabeliga, lisamine ja tabeli kujul esitamine
+
     require_once("functions.php");
     
-    //kui kasutaja ei ole sisse logitud, suuna teisele lehele
-    //kontrollin kas sessiooni muutuja olemas
-    if(!isset($_SESSION['logged_in_user_id'])){
+    if(!isset($_SESSION['user_id'])){
         header("Location: login.php");
+        // ära enne suunamist midagi rohkem tee
+        exit();
     }
     
-    // aadressireale tekkis ?logout=1
     if(isset($_GET["logout"])){
-        //kustutame sessiooni muutujad
         session_destroy();
         header("Location: login.php");
     }
     
+    // profiilipildi üleslaadimine
+    // http://www.w3schools.com/php/php_file_upload.asp
     
-    // muutujad väärtustega
-    $car_plate = $color = $m = "";
-    $car_plate_error = $color_error = "";
-    //echo $_SESSION['logged_in_user_id'];
+    $target_dir = "profile_pics/";
+    // faili nimi oleks kasutaja id .jpg
+
+    $target_file = $target_dir.$_SESSION['user_id'].".jpg";
     
-    // valideerida välja ja käivita fn
-    if($_SERVER["REQUEST_METHOD"] == "POST"){
+    // KAS kasutajal on pilt olemas
+    if(file_exists($target_file)){
         
-        if(isset($_POST["add_car_plate"])){
-            
-            if ( empty($_POST["car_plate"]) ) {
-                $car_plate_error = "Auto nr on kohustuslik!";
-            }else{
-                $car_plate = cleanInput($_POST["car_plate"]);
-            }
-            
-            if ( empty($_POST["color"]) ) {
-                $color_error = "Auto värv on kohustuslik!";
-            }else{
-                $color = cleanInput($_POST["color"]);
-            }
-            
-            //erroreid ei olnud käivitan funktsiooni,
-            //mis sisestab andmebaasi
-            if($car_plate_error == "" && $color_error == ""){
-                // m on message mille saadame functions.php
-                $m = createCarPlate($car_plate, $color);
+        $profile_image_url = $target_file;
+    }
+    
+    $uploadOk = 1;
+    
+    $imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
+    
+    // Check if image file is a actual image or fake image
+    if(isset($_POST["submit"])) {
+        $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
+        if($check !== false) {
+            echo "File is an image - " . $check["mime"] . ".";
+            $uploadOk = 1;
+        } else {
+            echo "File is not an image.";
+            $uploadOk = 0;
+        }
+    
+        // Check if file already exists
+        if (file_exists($target_file)) {
+            echo "Sorry, file already exists.";
+            $uploadOk = 0;
+        }
+        // Check file size
+        if ($_FILES["fileToUpload"]["size"] > 1024000) {
+            echo "Sorry, your file is too large.";
+            $uploadOk = 0;
+        }
+        // Allow certain file formats
+        if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+        && $imageFileType != "gif" ) {
+            echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+            $uploadOk = 0;
+        }
+        // Check if $uploadOk is set to 0 by an error
+        if ($uploadOk == 0) {
+            echo "Sorry, your file was not uploaded.";
+        // if everything is ok, try to upload file
+        } else {
+            if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+                echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
                 
-                if($m != ""){
-                    // teeme vormi tühjaks
-                    $car_plate = "";
-                    $color = "";
-                }
+                header("Location: data.php");
+                exit();
+                
+            } else {
+                echo "Sorry, there was an error uploading your file.";
             }
-            
         }
     }
     
     
-    // kirjuta fn 
-    function cleanInput($data) {
-        $data = trim($data);
-        $data = stripslashes($data);
-        $data = htmlspecialchars($data);
-        return $data;
+    if(isset($_GET["delete_image"])){
+        // kustutan pildi/faili
+        unlink($profile_image_url);
+        header("Location: data.php");
+        exit();
+        
     }
     
     
-    // küsime tabeli kujul andmed
-    getAllData();
-    
     
 ?>
+    
 
-Tere, <?=$_SESSION['logged_in_user_email'];?> <a href="?logout=1">Logi välja</a>
+Tere, <?=$_SESSION['user_email'];?> <a href="?logout=1">Logi välja</a>
 
-<h2>Lisa uus</h2>
-<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" >
-    <label for="car_plate"> Auto nr </label>
-  	<input id="car_plate" name="car_plate" type="text" value="<?=$car_plate;?>"> <?=$car_plate_error;?><br><br>
-  	<label for="color"> Värv </label>
-    <input id="color" name="color" type="text" value="<?=$color;?>"> <?=$color_error;?><br><br>
-  	<input type="submit" name="add_car_plate" value="Lisa">
-    <p style="color:green;"><?=$m;?></p>
-  </form>
+<br>
+
+<?php if(isset($_SESSION['login_message'])): ?>
+
+<p style="color:green;">
+    <?=$_SESSION['login_message'];?>
+</p>
+
+<?php 
+    // kustutan muutuja, et rohkem ei näidataks
+    // ainult 1 korra pärast sisselogimist
+    unset($_SESSION['login_message']);
+
+endif; ?>
+
+<br>
+
+<h3> Profiilipilt </h3>
+
+<?php if(isset($profile_image_url)): ?>
+
+    <div style="width:200px; height:200px; background-image: url(<?=$profile_image_url;?>); background-size: cover; background-position-x: center; background-position-y: center;" ></div>
+    <br><a href="?delete_image=1">Delete image</a>
+    
+<?php else: ?>
+
+
+<form action="data.php" method="post" enctype="multipart/form-data">
+    Vali profiilipilt:
+    <input type="file" name="fileToUpload" id="fileToUpload">
+    <input type="submit" value="Upload Image" name="submit">
+</form>
+
+<?php endif; ?>
+
+
+
+
+
+
+
+
+
+
+
+
