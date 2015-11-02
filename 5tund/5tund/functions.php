@@ -1,6 +1,9 @@
 <?php
 	require_once("../../../config_global.php");
 	$database = if15_brenbra_1
+	
+	session_start();
+	
 	function logInUser(){
 		$global $mysqli;
 		

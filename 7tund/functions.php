@@ -1,6 +1,6 @@
 <?php
 
-    require_once("../config_global.php");
+    require_once("../../config_global.php");
     $database = "if15_brenbra_1";
 
     function getAllData($keyword=""){
@@ -47,9 +47,6 @@
 			
         }
         
-        $stmt->close();
-        $mysqli->close();
-    }
 	
 	    function deleteCarData($car_id){
         
@@ -64,6 +61,7 @@
         header("Location: table.php");
         
         $stmt->close();
+	}
 		function updateCarData($car_id, $number_plate, $color){
         
         $mysqli = new mysqli($GLOBALS["servername"], $GLOBALS["server_username"], $GLOBALS["server_password"], $GLOBALS["database"]);

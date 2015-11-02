@@ -2,7 +2,7 @@
 
     require_once("../../config_global.php");
     $database = "if15_brenbra_1";
-
+	session_start();
     function getAllData($keyword=""){
 		
 		if($keyword == ""){
@@ -51,7 +51,7 @@
         $mysqli->close();
     }
 	
-	function deletehomeworkData($homework_id){
+	function deleteHomeworkData($homework_id){
         
         $mysqli = new mysqli($GLOBALS["servername"], $GLOBALS["server_username"], $GLOBALS["server_password"], $GLOBALS["database"]);
         
@@ -84,6 +84,46 @@
 		
         
     }
-    
+    function loginUser ($username, $email, $hash){
+		$mysqli = new mysqli($GLOBALS["servername"], $GLOBALS["server_username"], $GLOBALS["server_password"], $GLOBALS["database"]);
+		$stmt = $mysqli->prepare("SELECT id, email FROM user_sample WHERE username=? AND email=? AND password=?");
+                // küsimärkide asendus
+                $stmt->bind_param("sss", $username, $email, $hash);
+                //ab tulnud muutujad
+                $stmt->bind_result($id_from_db, $email_from_db);
+                $stmt->execute();
+                
+                // teeb päringu ja kui on tõene (st et ab oli see väärtus)
+                if($stmt->fetch()){
+                    
+                    // Kasutaja email ja parool õiged
+                    echo "Kasutaja logis sisse id=".$id_from_db;
+					$_SESSION["email"] = $email_from_db;
+					$_SESSION["id"] = $id_from_db;
+					
+					
+                    header("Location: ../table.php");
+                }else{
+                    echo "Wrong credentials!";
+                }
+                
+                $stmt->close();
+	}
+	function createUser ($create_username, $create_email, $hash){
+		$mysqli = new mysqli($GLOBALS["servername"], $GLOBALS["server_username"], $GLOBALS["server_password"], $GLOBALS["database"]);
+		$stmt = $mysqli->prepare("INSERT INTO user_sample (username, email, password) VALUES (?,?,?)");
+                
+                //kirjutan välja error
+                //echo $stmt->error;
+                //echo $mysqli->error;
+                
+                // paneme muutujad küsimärkide asemel
+                // ss - s string, iga muutuja koht 1 täht
+                $stmt->bind_param("sss",$create_username, $create_email, $hash);
+                
+                //käivitab sisestuse
+                $stmt->execute();
+                $stmt->close();
+	}
     
  ?>

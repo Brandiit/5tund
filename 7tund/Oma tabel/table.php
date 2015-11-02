@@ -6,7 +6,7 @@
 		deleteHomeworkData($_GET["delete"]);
 	}
 	if(isset($_GET["update"])){
-        updateHomeworkData($_GET["car_id"], $_GET["number_plate"], $_GET["color"]);
+        updateHomeworkData($_GET["homework_id"], $_GET["homework"], $_GET["date"]);
 	}
 	
 	$keyword = "";
@@ -21,6 +21,8 @@
 	}
 ?>
 
+Tere, <?=$_SESSION['email'];?>
+
 <h1>Tabel</h1>
 
 <form action="table.php" method="get">
@@ -34,7 +36,10 @@
 	<th>Kasutaja ID</th>
 	<th>Kodutöö sisu</th>
 	<th>Esitamise tähtaeg</th>
+	<th><a href="data.php">Lisa uus</a></th>
+	<th><a href="?logout=1">Logi välja</a></th>
 </tr>
+
 <?php    
     // autod ükshaaval läbi käia
     for($i = 0; $i < count($homework_array); $i++){

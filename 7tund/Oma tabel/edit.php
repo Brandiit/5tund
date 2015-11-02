@@ -24,10 +24,9 @@
         
     }
 ?>
-<!-- Salvestamiseks kasutan table.php rida 15, updateCar() -->
 <form action="edit.php" method="get" >
     <input name="homework_id" type="hidden" value="<?=$_GET["edit_id"];?>">
-    <input name="homework" type="text" value="<?=$car->homework;?>" ><br>
-    <input name="date" type="text" value="<?=$car->date;?>"><br>
+    <input name="homework" type="text" value="<?=$homework->homework;?>" ><br>
+    <input name="date" type="text" value="<?=$homework->date;?>"><br>
     <input name="update" type="submit" >
 </form>

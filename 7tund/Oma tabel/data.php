@@ -4,15 +4,15 @@
     
     //kui kasutaja ei ole sisse logitud, suuna teisele lehele
     //kontrollin kas sessiooni muutuja olemas
-    if(!isset($_SESSION['logged_in_user_id'])){
-        header("Location: page/login.php");
+    if(!isset($_SESSION['id'])){
+        header("Location: login.php");
     }
     
     // aadressireale tekkis ?logout=1
     if(isset($_GET["logout"])){
         //kustutame sessiooni muutujad
         session_destroy();
-        header("Location: page/login.php");
+        header("Location: login.php");
     }
 	
 	function cleanInput($data) {
