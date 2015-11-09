@@ -1,13 +1,14 @@
 <?php
-    require_once("functions.php");
-    
-    //kui kasutaja on sisse logitud, suuna teisele lehele
-    //kontrollin kas sessiooni muutuja olemas
-    if(isset($_SESSION['user_id'])){
-        header("Location: data.php");
-    }
 
-
+	//laeme funktsiooni failis
+	require_once("functions.php");
+	
+	//kontrollin, kas kasutaja on sisseloginud
+	if(isset($_SESSION["id_from_db"])){
+		// suunan data lehele
+		header("Location: data.php");
+	}
+	
   // muuutujad errorite jaoks
 	$email_error = "";
 	$password_error = "";
@@ -43,26 +44,37 @@
 
       // Kui oleme siia jõudnud, võime kasutaja sisse logida
 			if($password_error == "" && $email_error == ""){
-				//echo "Võib sisse logida! Kasutajanimi on ".$email." ja parool on ".$password;
-			
-                $hash = hash("sha512", $password);
-                
-                $login_response = $User->loginUser($email, $hash);
-                
-                //var_dump($login_response);
-                //echo $login_response->success->user->email;
-                
-                if(isset($login_response->success)){
-                    // sisselogimine õnnestus
-                    $_SESSION["user_id"] = $login_response->success->user->id;
-                    $_SESSION["user_email"] = $login_response->success->user->email;
-                    
-                    $_SESSION["login_message"] = $login_response->success->message;
-                    
-                    header("Location: data.php");
-                }
-            
-            }
+				echo "Võib sisse logida! Kasutajanimi on ".$email." ja parool on ".$password;
+				
+				$password_hash = hash("sha512", $password);
+				
+				// User klassi sees olev funktsioon
+				$login_response = $User->loginUser($email, $password_hash);
+				
+				//kasutaja on sisse logitud
+				if(isset($login_response->success)){
+					
+					//echo "<pre>";
+					//var_dump($login_response);
+					//echo "</pre>";
+					// läks edukalt, nüüd peaks kasutaja sessiooni salvestama
+					$_SESSION["id_from_db"] = $login_response->success->user->id;
+					$_SESSION["user_email"] = $login_response->success->user->email;
+					
+					header("Location: data.php");
+					
+					//******************************
+					//********* OLULINE ************
+					//******************************
+					
+					// lõpetame PHP laadimise
+					exit();
+					
+					
+				}
+				
+
+			}
 
 		} // login if end
 
@@ -88,21 +100,18 @@
 			}
 
 			if(	$create_email_error == "" && $create_password_error == ""){
-				//echo hash("sha512", $create_password);
-                //echo "Võib kasutajat luua! Kasutajanimi on ".$create_email." ja parool on ".$create_password;
-                
-                // tekitan parooliräsi
-                $hash = hash("sha512", $create_password);
-                
-                //functions.php's funktsioon
-                $response = $User->createUser($create_email, $hash);
-                
-                
-                
-                
-            }
+				echo "Võib kasutajat luua! Kasutajanimi on ".$create_email." ja parool on ".$create_password;
+				
+				$password_hash = hash("sha512", $create_password);
+				echo "<br>";
+				echo $password_hash;
+				
+				// User klassi sees olev funktsioon
+				$create_response = $User->createUser($create_email, $password_hash);
+				
+			}
 
-        } // create if end
+    } // create if end
 
 	}
 
@@ -114,6 +123,8 @@
   	return $data;
   }
   
+  
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -126,11 +137,17 @@
   
   <?php if(isset($login_response->error)): ?>
   
-  <p style="color:red;">
-    <?=$login_response->error->message;?>
-  </p>
-   
-  <?php endif; ?>
+	<p style="color:red;">
+		<?=$login_response->error->message;?>
+	</p>
+  
+  <?php elseif(isset($login_response->success)): ?>
+  
+	<p style="color:green;">
+		<?=$login_response->success->message;?>
+	</p>
+  
+  <?php endif; ?>  
   
   <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" >
   	<input name="email" type="email" placeholder="E-post" value="<?php echo $email; ?>"> <?php echo $email_error; ?><br><br>
@@ -140,20 +157,19 @@
 
   <h2>Create user</h2>
   
-  <?php if(isset($response->success)): ?>
+  <?php if(isset($create_response->error)): ?>
   
-  <p style="color:green;">
-    <?=$response->success->message;?>
-  </p>
+	<p style="color:red;">
+		<?=$create_response->error->message;?>
+	</p>
   
-  <?php elseif(isset($response->error)): ?>
+  <?php elseif(isset($create_response->success)): ?>
   
-  <p style="color:red;">
-    <?=$response->error->message;?>
-  </p>
-   
-  <?php endif; ?>
+	<p style="color:green;">
+		<?=$create_response->success->message;?>
+	</p>
   
+  <?php endif; ?>  
   
   <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" >
   	<input name="create_email" type="email" placeholder="E-post" value="<?php echo $create_email; ?>"> <?php echo $create_email_error; ?><br><br>
